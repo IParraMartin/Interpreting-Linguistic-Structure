@@ -1,0 +1,57 @@
+# Output and logging settings
+output_dir: ./out/gpt2-dummy
+report_to: "wandb"
+project: "pretrained-interp-models"
+run_name: "dummy-run"
+push_to_hub: False
+
+# Evaluation strategy
+eval_strategy: "steps"
+eval_steps: 500
+
+# Batch sizes
+auto_find_batch_size: False
+per_device_train_batch_size: 8
+per_device_eval_batch_size: 8
+gradient_accumulation_steps: 16
+torch_empty_cache_steps: 500
+
+# Optimizer settings
+optim: "adamw_torch_fused"
+learning_rate: 0.0001
+weight_decay: 0.001
+adam_beta1: 0.9
+adam_beta2: 0.98
+max_grad_norm: 1.0
+
+# Training duration
+max_steps: 5000
+
+# Learning rate scheduler
+lr_scheduler_type: "cosine"
+warmup_ratio: 0.1
+
+# Logging settings
+logging_dir: "./log"
+logging_strategy: "steps"
+logging_steps: 1
+
+# Save settings
+save_strategy: "steps"
+save_steps: 500
+save_total_limit: 10
+
+# Hardware settings
+seed: 42
+
+# Precision settings
+bf16: True
+bf16_full_eval: True
+
+# Dataloader settings
+dataloader_drop_last: False
+dataloader_num_workers: 4
+dataloader_pin_memory: True
+
+# Gradient checkpointing
+gradient_checkpointing: True
