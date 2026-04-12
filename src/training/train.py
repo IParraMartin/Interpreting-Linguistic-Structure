@@ -1,6 +1,7 @@
 import argparse
 
 from pretrainer import LMTrainer
+from datasets import load_dataset
 
 
 if __name__ == "__main__":
@@ -12,11 +13,14 @@ if __name__ == "__main__":
     p.add_argument("--cache_dir", type=str, default="cache", required=True)
     args = p.parse_args()
 
+    ds = load_dataset(args.hf_dataset, cache_dir=args.cache_dir)
+
     trainer = LMTrainer(
         hf_model=args.hf_model,
-        dataset=args.dataset,
+        dataset=ds,
         training_args=args.training_args,
         model_args=args.model_args,
         cache_dir=args.cache_dir
     )
+    
     trainer.train()
