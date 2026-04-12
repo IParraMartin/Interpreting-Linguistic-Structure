@@ -5,12 +5,42 @@ from datasets import load_dataset
 
 
 if __name__ == "__main__":
-    p = argparse.ArgumentParser()
-    p.add_argument("--hf_model", type=str, default="gpt2", required=True)
-    p.add_argument("--hf_dataset", type=str, default="BabyLM-community/BabyLM-2026-Strict", required=True)
-    p.add_argument("--training_args", type=str, default="configs/training/train.yaml", required=True)
-    p.add_argument("--model_args", type=str, default="configs/models/gpt2_small.yaml", required=True)
-    p.add_argument("--cache_dir", type=str, default="cache", required=True)
+    p = argparse.ArgumentParser(add_help="")
+    p.add_argument(
+        "--hf_model", 
+        type=str, 
+        default="gpt2", 
+        required=True, 
+        help="HuggingFace model name or path (e.g. 'gpt2', 'gpt2-medium')."
+    )
+    p.add_argument(
+        "--hf_dataset",
+        type=str,
+        default="BabyLM-community/BabyLM-2026-Strict",
+        required=True,
+        help="HuggingFace dataset identifier to load for training."
+    )
+    p.add_argument(
+        "--training_args",
+        type=str,
+        default="configs/training/train.yaml",
+        required=True,
+        help="Path to YAML file containing HuggingFace TrainingArguments."
+    )
+    p.add_argument(
+        "--model_args",
+        type=str,
+        default="configs/models/gpt2_small.yaml",
+        required=True,
+        help="Path to YAML file containing model architecture config."
+    )
+    p.add_argument(
+        "--cache_dir",
+        type=str,
+        default="cache",
+        required=True,
+        help="Directory for caching downloaded models and datasets."
+    )
     args = p.parse_args()
 
     ds = load_dataset(args.hf_dataset, cache_dir=args.cache_dir)
@@ -22,5 +52,5 @@ if __name__ == "__main__":
         model_args=args.model_args,
         cache_dir=args.cache_dir
     )
-    
+
     trainer.train()
