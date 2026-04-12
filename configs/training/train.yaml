@@ -6,7 +6,7 @@ run_name: "dummy-run"
 push_to_hub: False
 
 # Evaluation strategy
-eval_strategy: "steps"
+eval_strategy: "no"
 eval_steps: 500
 
 # Batch sizes
