@@ -5,7 +5,7 @@ from datasets import load_dataset
 
 
 if __name__ == "__main__":
-    p = argparse.ArgumentParser(add_help="")
+    p = argparse.ArgumentParser(add_help="Pretraining script")
     p.add_argument(
         "--hf_model", 
         type=str, 
