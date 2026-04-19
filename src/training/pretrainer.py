@@ -7,8 +7,6 @@ from transformers import AutoConfig, AutoModelForCausalLM
 from transformers import Trainer, TrainingArguments
 from datasets import DatasetDict
 
-import wandb
-
 
 class LMTrainer():
     """Trainer wrapper for causal language model pretraining using HuggingFace Transformers.
@@ -60,7 +58,11 @@ class LMTrainer():
         self.model_args = self.return_arguments(model_args)
         self.training_args = self.return_arguments(training_args)
 
-        self.tokenizer = AutoTokenizer.from_pretrained(hf_model, cache_dir=self.cache_dir)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            hf_model, 
+            use_fast=True, 
+            cache_dir=self.cache_dir
+        )
         self.model = AutoModelForCausalLM.from_config(self.get_model_config())
 
         if self.tokenizer.pad_token is None:
@@ -91,11 +93,7 @@ class LMTrainer():
             eval_dataset=eval_available,
             processing_class=self.tokenizer
         )
-        try:
-            trainer.train()
-        finally:
-            if self.training_args.get("report_to") == "wandb":
-                wandb.finish()
+        trainer.train()
 
     def get_model_config(self) -> AutoConfig:
         """Builds an `AutoConfig` for the target model architecture.
@@ -140,7 +138,9 @@ class LMTrainer():
         """
         tokenized_dataset = dataset.map(
             self.tokenize,
-            batched=True
+            batched=True,
+            remove_columns=["text"],
+            desc="Tokenizing"
         )
         return tokenized_dataset
 
@@ -179,7 +179,6 @@ class LMTrainer():
         """
         return self.tokenizer(
             batch["text"],
-            padding='max_length',
             truncation=True,
             max_length=self.max_len
         )
