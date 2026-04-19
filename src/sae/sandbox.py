@@ -1,6 +1,9 @@
+from functools import partial
+
 import torch
 from sae_lens import SAE
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformer_lens import HookedTransformer
 
 
 # Pretrained models here:
@@ -12,25 +15,45 @@ ID = "blocks.6.hook_resid_pre"
 HIDDEN_STATE_L = 6
 DEVICE = "cpu"
 
-text = "The house in the forest"
+pair = {"sentence_good": "the dog barks", "sentence_bad": "the dog bark"}
 
+
+# DUMMY EXAMPLE
+text = "The dog barks"
+
+# load models
 sae = SAE.from_pretrained(RELEASE, ID, device=DEVICE)
-model = AutoModelForCausalLM.from_pretrained(HF_MODEL, cache_dir="cache")
-tokenizer = AutoTokenizer.from_pretrained(HF_MODEL, cache_dir="cache")
+model = HookedTransformer.from_pretrained(HF_MODEL, cache_dir="cache")
 
-inputs = tokenizer(text, return_tensors="pt")
+# tokenize
+tokens = model.to_tokens(text)
+
+# get acts
 with torch.no_grad():
-    out = model(**inputs, output_hidden_states=True)
-
-acts = out.hidden_states[HIDDEN_STATE_L]
-feature_acts = sae.encode(acts)
+    _, cache = model.run_with_cache(tokens)
+acts = cache["blocks.6.hook_resid_pre"]
 
 # Check which features are active
-active_features = (feature_acts > 0).sum(dim=-1)
+active_features = (acts > 0).sum(dim=-1).cpu()
 print(f"Active feats (N): {len(active_features.squeeze().numpy())}")
 print(f"Active feats (idx): {active_features}")
 print(f"Average L0: {active_features.float().mean().item()}")
 
+# # Ablation
+# def ablate_feature(sae_acts, hook, feature_id):
+#     sae_acts[:, :, feature_id] = 0.0
+#     return sae_acts
 
-if __name__ == "__main__":
-    pass
+# # Ablate feature 1000 during forward pass
+# logits = model.run_with_hooks_with_saes(
+#     inputs,
+#     saes=[sae],
+#     fwd_hooks=[
+#         ("blocks.12.hook_resid_post.hook_sae_acts_post",
+#          partial(ablate_feature, feature_id=1000))
+#     ]
+# )
+
+
+# if __name__ == "__main__":
+#     pass

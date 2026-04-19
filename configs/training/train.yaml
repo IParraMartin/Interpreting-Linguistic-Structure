@@ -1,8 +1,8 @@
-# Output and logging settings
-output_dir: ./out/gpt2-dummy
+# I/O and logging settings
+output_dir: ./out/gpt2-medium-bLM100M
 report_to: "wandb"
 project: "pretrained-interp-models"
-run_name: "dummy-run"
+run_name: "gpt2-medium-bLM100M"
 push_to_hub: False
 
 # Evaluation strategy
@@ -11,8 +11,8 @@ eval_steps: 500
 
 # Batch sizes
 auto_find_batch_size: False
-per_device_train_batch_size: 8
-per_device_eval_batch_size: 8
+per_device_train_batch_size: 32
+per_device_eval_batch_size: 32
 gradient_accumulation_steps: 16
 torch_empty_cache_steps: 500
 
@@ -25,7 +25,7 @@ adam_beta2: 0.98
 max_grad_norm: 1.0
 
 # Training duration
-max_steps: 5000
+max_steps: 573
 
 # Learning rate scheduler
 lr_scheduler_type: "cosine"
@@ -38,7 +38,7 @@ logging_steps: 1
 
 # Save settings
 save_strategy: "steps"
-save_steps: 500
+save_steps: 100
 save_total_limit: 10
 
 # Hardware settings
