@@ -142,6 +142,12 @@ class LMTrainer():
             remove_columns=["text"],
             desc="Tokenizing"
         )
+        # pack into fixed-length blocks with no padding waste
+        tokenized_dataset = tokenized_dataset.map(
+            self.group_texts,
+            batched=True,
+            desc="Grouping texts"
+        )
         return tokenized_dataset
 
     def get_data_collator(self) -> DataCollatorForLanguageModeling:
@@ -182,6 +188,35 @@ class LMTrainer():
             truncation=True,
             max_length=self.max_len
         )
+
+    def group_texts(self, examples: dict) -> dict:
+        """concatenates all tokenized texts and rechunks into fixed-length blocks.
+        
+        this eliminates padding waste by packing documents end-to-end and
+        slicing into sequences of exactly `max_len` tokens. any remainder
+        shorter than `max_len` is dropped.
+
+        args:
+            examples (dict): a batch of tokenized examples with 'input_ids'
+                and 'attention_mask' keys, each mapping to a list of lists.
+
+        returns:
+            dict: rechunked sequences of exactly `max_len` length, plus
+                a 'labels' key copied from 'input_ids' for the causal LM objective.
+        """
+        # flatten all sequences into one long stream per key
+        concatenated = {k: sum(examples[k], []) for k in examples.keys()}
+        total_length = len(concatenated["input_ids"])
+        # drop the remainder that doesn't fill a complete block
+        total_length = (total_length // self.max_len) * self.max_len
+        # split into fixed-length chunks
+        result = {
+            k: [concatenated[k][i : i + self.max_len] for i in range(0, total_length, self.max_len)]
+            for k in concatenated.keys()
+        }
+        # labels are just a copy of input_ids; the model handles the shift internally
+        result["labels"] = result["input_ids"].copy()
+        return result
 
     def make_cache_dir(self, cache_dir: str = None) -> str:
         """Creates the cache directory if it does not exist and returns its path.
